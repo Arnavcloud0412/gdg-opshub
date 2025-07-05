@@ -1,27 +1,79 @@
 
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Users, Calendar, CheckSquare, TrendingUp, Plus, Award } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { getEvents, getTasks, getMembers } from "@/services/firestoreService";
 
 export const Dashboard = () => {
+  const { data: events = [], isLoading: eventsLoading } = useQuery({
+    queryKey: ['events'],
+    queryFn: getEvents
+  });
+
+  const { data: tasks = [], isLoading: tasksLoading } = useQuery({
+    queryKey: ['tasks'],
+    queryFn: getTasks
+  });
+
+  const { data: members = [], isLoading: membersLoading } = useQuery({
+    queryKey: ['members'],
+    queryFn: getMembers
+  });
+
+  const upcomingEvents = events.filter(event => event.status === 'upcoming');
+  const activeTasks = tasks.filter(task => task.status === 'pending' || task.status === 'in_progress');
+  const topContributors = members
+    .sort((a, b) => b.xp - a.xp)
+    .slice(0, 3)
+    .map(member => ({
+      name: member.name,
+      role: member.role,
+      xp: member.xp,
+      avatar: member.name.split(' ').map(n => n[0]).join('')
+    }));
+
   const stats = [
-    { title: "Total Members", value: "47", icon: Users, color: "text-blue-600", bg: "bg-blue-50" },
-    { title: "Events This Month", value: "5", icon: Calendar, color: "text-red-600", bg: "bg-red-50" },
-    { title: "Active Tasks", value: "12", icon: CheckSquare, color: "text-yellow-600", bg: "bg-yellow-50" },
-    { title: "Avg. Contribution", value: "85", icon: TrendingUp, color: "text-green-600", bg: "bg-green-50" },
+    { 
+      title: "Total Members", 
+      value: membersLoading ? "..." : members.length.toString(), 
+      icon: Users, 
+      color: "text-blue-600", 
+      bg: "bg-blue-50" 
+    },
+    { 
+      title: "Events This Month", 
+      value: eventsLoading ? "..." : upcomingEvents.length.toString(), 
+      icon: Calendar, 
+      color: "text-red-600", 
+      bg: "bg-red-50" 
+    },
+    { 
+      title: "Active Tasks", 
+      value: tasksLoading ? "..." : activeTasks.length.toString(), 
+      icon: CheckSquare, 
+      color: "text-yellow-600", 
+      bg: "bg-yellow-50" 
+    },
+    { 
+      title: "Avg. Contribution", 
+      value: membersLoading ? "..." : Math.round(members.reduce((sum, m) => sum + m.xp, 0) / Math.max(members.length, 1)).toString(), 
+      icon: TrendingUp, 
+      color: "text-green-600", 
+      bg: "bg-green-50" 
+    },
   ];
 
-  const recentEvents = [
-    { title: "Google Cloud Workshop", date: "Dec 15", attendees: 25, status: "Completed" },
-    { title: "Android Dev Meetup", date: "Dec 20", attendees: 18, status: "Upcoming" },
-    { title: "AI/ML Study Jam", date: "Dec 22", attendees: 32, status: "Upcoming" },
-  ];
-
-  const topContributors = [
-    { name: "Sarah Chen", role: "Core Team", xp: 1250, avatar: "SC" },
-    { name: "Alex Rodriguez", role: "Volunteer", xp: 890, avatar: "AR" },
-    { name: "Jordan Kim", role: "Core Team", xp: 760, avatar: "JK" },
-  ];
+  const recentEvents = events
+    .sort((a, b) => b.date.seconds - a.date.seconds)
+    .slice(0, 3)
+    .map(event => ({
+      title: event.title,
+      date: new Date(event.date.seconds * 1000).toLocaleDateString(),
+      attendees: event.assigned_members.length,
+      status: event.status === 'completed' ? 'Completed' : 'Upcoming'
+    }));
 
   return (
     <div className="space-y-6">
@@ -69,7 +121,7 @@ export const Dashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentEvents.map((event, index) => (
+              {recentEvents.length > 0 ? recentEvents.map((event, index) => (
                 <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div>
                     <h4 className="font-medium text-gray-900">{event.title}</h4>
@@ -83,7 +135,9 @@ export const Dashboard = () => {
                     {event.status}
                   </span>
                 </div>
-              ))}
+              )) : (
+                <p className="text-gray-500 text-center py-4">No events found</p>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -98,7 +152,7 @@ export const Dashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {topContributors.map((contributor, index) => (
+              {topContributors.length > 0 ? topContributors.map((contributor, index) => (
                 <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                   <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
                     {contributor.avatar}
@@ -112,7 +166,9 @@ export const Dashboard = () => {
                     <p className="text-xs text-gray-600">XP</p>
                   </div>
                 </div>
-              ))}
+              )) : (
+                <p className="text-gray-500 text-center py-4">No contributors found</p>
+              )}
             </div>
           </CardContent>
         </Card>

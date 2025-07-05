@@ -4,52 +4,77 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Calendar, MapPin, Users } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getEvents, createEvent, updateEvent } from "@/services/firestoreService";
+import { useAuth } from "@/hooks/useAuth";
+import { CreateEventDialog } from "@/components/CreateEventDialog";
+import { Timestamp } from "firebase/firestore";
 
 export const EventsPage = () => {
   const [activeTab, setActiveTab] = useState("upcoming");
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const { userData } = useAuth();
+  const queryClient = useQueryClient();
 
-  const events = {
-    upcoming: [
-      {
-        id: 1,
-        title: "Android Dev Meetup",
-        date: "Dec 20, 2024",
-        time: "6:00 PM",
-        venue: "Tech Hub, Room 101",
-        description: "Learn the latest Android development techniques and network with fellow developers.",
-        attendees: 18,
-        maxAttendees: 30,
-        tags: ["Android", "Mobile"],
-        status: "Open"
-      },
-      {
-        id: 2,
-        title: "AI/ML Study Jam",
-        date: "Dec 22, 2024",
-        time: "2:00 PM",
-        venue: "Computer Lab B",
-        description: "Hands-on machine learning workshop using Google's TensorFlow and Vertex AI.",
-        attendees: 32,
-        maxAttendees: 40,
-        tags: ["AI/ML", "TensorFlow"],
-        status: "Almost Full"
-      }
-    ],
-    past: [
-      {
-        id: 3,
-        title: "Google Cloud Workshop",
-        date: "Dec 15, 2024",
-        time: "3:00 PM",
-        venue: "Main Auditorium",
-        description: "Introduction to Google Cloud Platform and serverless computing.",
-        attendees: 25,
-        maxAttendees: 25,
-        tags: ["GCP", "Cloud"],
-        status: "Completed"
-      }
-    ]
+  const { data: events = [], isLoading } = useQuery({
+    queryKey: ['events'],
+    queryFn: getEvents
+  });
+
+  const createEventMutation = useMutation({
+    mutationFn: createEvent,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+      setShowCreateDialog(false);
+    }
+  });
+
+  const upcomingEvents = events.filter(event => event.status === 'upcoming' || event.status === 'planned');
+  const pastEvents = events.filter(event => event.status === 'completed');
+
+  const formatDate = (timestamp: any) => {
+    if (timestamp?.seconds) {
+      return new Date(timestamp.seconds * 1000).toLocaleDateString();
+    }
+    return 'TBD';
   };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'upcoming':
+      case 'planned':
+        return "bg-green-100 text-green-800";
+      case 'completed':
+        return "bg-gray-100 text-gray-800";
+      default:
+        return "bg-blue-100 text-blue-800";
+    }
+  };
+
+  const handleCreateEvent = (eventData: any) => {
+    const newEvent = {
+      ...eventData,
+      created_by: userData?.uid || '',
+      date: Timestamp.fromDate(new Date(eventData.date)),
+      created_at: Timestamp.now(),
+      assigned_members: [],
+      tasks: [],
+      photos: [],
+      status: 'upcoming' as const
+    };
+    
+    createEventMutation.mutate(newEvent);
+  };
+
+  const currentEvents = activeTab === 'upcoming' ? upcomingEvents : pastEvents;
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-64">
+        <p>Loading events...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -58,10 +83,15 @@ export const EventsPage = () => {
           <h1 className="text-3xl font-bold text-gray-900">Events</h1>
           <p className="text-gray-600 mt-1">Manage and track your GDG chapter events.</p>
         </div>
-        <Button className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2">
-          <Plus className="w-4 h-4" />
-          Create Event
-        </Button>
+        {(userData?.role === 'admin' || userData?.role === 'core') && (
+          <Button 
+            onClick={() => setShowCreateDialog(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Create Event
+          </Button>
+        )}
       </div>
 
       {/* Tabs */}
@@ -71,37 +101,33 @@ export const EventsPage = () => {
           onClick={() => setActiveTab("upcoming")}
           className={activeTab === "upcoming" ? "bg-blue-600 hover:bg-blue-700" : ""}
         >
-          Upcoming Events
+          Upcoming Events ({upcomingEvents.length})
         </Button>
         <Button
           variant={activeTab === "past" ? "default" : "outline"}
           onClick={() => setActiveTab("past")}
           className={activeTab === "past" ? "bg-blue-600 hover:bg-blue-700" : ""}
         >
-          Past Events
+          Past Events ({pastEvents.length})
         </Button>
       </div>
 
       {/* Events Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {events[activeTab as keyof typeof events].map((event) => (
+        {currentEvents.length > 0 ? currentEvents.map((event) => (
           <Card key={event.id} className="border-0 shadow-md hover:shadow-lg transition-shadow">
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
                 <CardTitle className="text-lg text-gray-900">{event.title}</CardTitle>
                 <Badge 
                   variant="secondary" 
-                  className={`
-                    ${event.status === "Open" ? "bg-green-100 text-green-800" : ""}
-                    ${event.status === "Almost Full" ? "bg-yellow-100 text-yellow-800" : ""}
-                    ${event.status === "Completed" ? "bg-gray-100 text-gray-800" : ""}
-                  `}
+                  className={getStatusBadge(event.status)}
                 >
-                  {event.status}
+                  {event.status === 'upcoming' ? 'Open' : event.status}
                 </Badge>
               </div>
               <div className="flex flex-wrap gap-2 mt-2">
-                {event.tags.map((tag) => (
+                {event.tags?.map((tag) => (
                   <Badge key={tag} variant="outline" className="text-xs">
                     {tag}
                   </Badge>
@@ -114,15 +140,15 @@ export const EventsPage = () => {
               <div className="space-y-2 text-sm">
                 <div className="flex items-center gap-2 text-gray-600">
                   <Calendar className="w-4 h-4" />
-                  {event.date} at {event.time}
+                  {formatDate(event.date)} at {event.time || 'TBD'}
                 </div>
                 <div className="flex items-center gap-2 text-gray-600">
                   <MapPin className="w-4 h-4" />
-                  {event.venue}
+                  {event.venue || 'TBD'}
                 </div>
                 <div className="flex items-center gap-2 text-gray-600">
                   <Users className="w-4 h-4" />
-                  {event.attendees}/{event.maxAttendees} attendees
+                  {event.assigned_members?.length || 0} members assigned
                 </div>
               </div>
 
@@ -130,7 +156,7 @@ export const EventsPage = () => {
                 <Button variant="outline" size="sm" className="flex-1">
                   View Details
                 </Button>
-                {activeTab === "upcoming" && (
+                {activeTab === "upcoming" && (userData?.role === 'admin' || userData?.role === 'core') && (
                   <Button size="sm" className="flex-1 bg-blue-600 hover:bg-blue-700">
                     Manage
                   </Button>
@@ -138,8 +164,28 @@ export const EventsPage = () => {
               </div>
             </CardContent>
           </Card>
-        ))}
+        )) : (
+          <div className="col-span-full text-center py-12">
+            <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+            <p className="text-gray-500">No {activeTab} events found</p>
+            {activeTab === 'upcoming' && (userData?.role === 'admin' || userData?.role === 'core') && (
+              <Button 
+                onClick={() => setShowCreateDialog(true)}
+                className="mt-4 bg-blue-600 hover:bg-blue-700"
+              >
+                Create Your First Event
+              </Button>
+            )}
+          </div>
+        )}
       </div>
+
+      <CreateEventDialog 
+        open={showCreateDialog}
+        onOpenChange={setShowCreateDialog}
+        onSubmit={handleCreateEvent}
+        isLoading={createEventMutation.isPending}
+      />
     </div>
   );
 };

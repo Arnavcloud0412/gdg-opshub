@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Upload, FileText, Image, Sparkles, Download, Copy } from "lucide-react";
+import { generateEventDocumentation } from "@/services/geminiService";
+import { useToast } from "@/hooks/use-toast";
 
 export const AIDocsPage = () => {
   const [eventNotes, setEventNotes] = useState("");
@@ -15,20 +17,55 @@ export const AIDocsPage = () => {
     blogDraft: "",
     newsletter: ""
   });
+  const { toast } = useToast();
 
   const handleGenerate = async () => {
+    if (!eventNotes.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter event notes before generating documentation.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsGenerating(true);
     
-    // Simulate AI generation
-    setTimeout(() => {
+    try {
+      const prompt = `Generate professional event documentation based on these notes: ${eventNotes}`;
+      const result = await generateEventDocumentation(prompt);
+      
+      // Parse the AI response and extract different content types
       setGeneratedContent({
-        summary: "The Android Development Meetup was a huge success with 25 attendees participating in hands-on coding sessions. Participants learned about Jetpack Compose, modern Android architecture patterns, and Firebase integration. The event featured interactive workshops and networking opportunities, fostering collaboration within our developer community.",
-        socialMedia: "🚀 Amazing Android Dev Meetup yesterday! 25 developers joined us to explore Jetpack Compose and modern app architecture. Thanks to all participants for making it an incredible learning experience! #GDG #AndroidDev #JetpackCompose #CommunityLearning",
-        blogDraft: "# Android Development Meetup: A Journey into Modern App Development\n\nYesterday's Android Development Meetup brought together 25 passionate developers eager to dive deep into the latest Android technologies. The event showcased the power of Jetpack Compose and demonstrated best practices for modern Android architecture.\n\n## Key Highlights\n- Interactive Jetpack Compose workshop\n- Firebase integration demonstrations\n- Networking and knowledge sharing\n- Community building and collaboration\n\nThe enthusiasm and engagement from our community members made this event truly special...",
-        newsletter: "📱 Android Dev Meetup Recap\n\nOur recent Android Development Meetup was a fantastic success! Here's what happened:\n\n✅ 25 developers attended\n✅ Hands-on Jetpack Compose workshops\n✅ Firebase integration tutorials\n✅ Great networking opportunities\n\nThank you to everyone who participated. Stay tuned for our next event announcement!\n\nBest regards,\nGDG Team"
+        summary: result.summary || result.text || "Event summary generated successfully.",
+        socialMedia: result.socialMedia || "🚀 Amazing event with our GDG community! Thanks to all participants for making it an incredible learning experience! #GDG #TechCommunity",
+        blogDraft: result.blogDraft || `# Event Recap\n\n${result.text || eventNotes}\n\nThe event was a great success with active participation from our community members.`,
+        newsletter: result.newsletter || `📱 Event Recap\n\nOur recent event was a fantastic success! Here's what happened:\n\n${eventNotes}\n\nThank you to everyone who participated.\n\nBest regards,\nGDG Team`
       });
+
+      toast({
+        title: "Documentation Generated!",
+        description: "AI has successfully generated your event documentation."
+      });
+    } catch (error) {
+      console.error('Error generating documentation:', error);
+      toast({
+        title: "Generation Failed",
+        description: "Failed to generate documentation. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
       setIsGenerating(false);
-    }, 2000);
+    }
+  };
+
+  const copyToClipboard = (content: string, type: string) => {
+    navigator.clipboard.writeText(content).then(() => {
+      toast({
+        title: "Copied!",
+        description: `${type} copied to clipboard.`
+      });
+    });
   };
 
   const contentTypes = [
@@ -72,15 +109,15 @@ export const AIDocsPage = () => {
 
             <div className="space-y-3">
               <label className="block text-sm font-medium text-gray-700">
-                Upload Event Materials (Optional)
+                Upload Event Materials (Coming Soon)
               </label>
               
               <div className="grid grid-cols-2 gap-3">
-                <Button variant="outline" className="h-20 flex flex-col items-center gap-2">
+                <Button variant="outline" className="h-20 flex flex-col items-center gap-2" disabled>
                   <Image className="w-6 h-6 text-gray-400" />
                   <span className="text-sm">Upload Photos</span>
                 </Button>
-                <Button variant="outline" className="h-20 flex flex-col items-center gap-2">
+                <Button variant="outline" className="h-20 flex flex-col items-center gap-2" disabled>
                   <Upload className="w-6 h-6 text-gray-400" />
                   <span className="text-sm">Upload Files</span>
                 </Button>
@@ -128,15 +165,19 @@ export const AIDocsPage = () => {
                           {type.title}
                         </h4>
                         <div className="flex gap-2">
-                          <Button variant="ghost" size="sm">
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => copyToClipboard(content, type.title)}
+                          >
                             <Copy className="w-4 h-4" />
                           </Button>
-                          <Button variant="ghost" size="sm">
+                          <Button variant="ghost" size="sm" disabled>
                             <Download className="w-4 h-4" />
                           </Button>
                         </div>
                       </div>
-                      <div className="bg-gray-50 rounded p-3 text-sm text-gray-700 whitespace-pre-wrap">
+                      <div className="bg-gray-50 rounded p-3 text-sm text-gray-700 whitespace-pre-wrap max-h-40 overflow-y-auto">
                         {content}
                       </div>
                     </div>
