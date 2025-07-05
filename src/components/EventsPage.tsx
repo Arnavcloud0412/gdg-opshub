@@ -29,7 +29,7 @@ export const EventsPage = () => {
     }
   });
 
-  const upcomingEvents = events.filter(event => event.status === 'upcoming' || event.status === 'planned');
+  const upcomingEvents = events.filter(event => event.status === 'upcoming');
   const pastEvents = events.filter(event => event.status === 'completed');
 
   const formatDate = (timestamp: any) => {
