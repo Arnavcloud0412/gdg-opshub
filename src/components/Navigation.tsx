@@ -1,13 +1,17 @@
 
 import { Button } from "@/components/ui/button";
-import { Users, Calendar, CheckSquare, FileText, BarChart3, User } from "lucide-react";
+import { Users, Calendar, CheckSquare, FileText, BarChart3, User, LogOut } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 interface NavigationProps {
   currentPage: string;
   onPageChange: (page: string) => void;
+  userData: any;
 }
 
-export const Navigation = ({ currentPage, onPageChange }: NavigationProps) => {
+export const Navigation = ({ currentPage, onPageChange, userData }: NavigationProps) => {
+  const { logout } = useAuth();
+  
   const navItems = [
     { id: "dashboard", label: "Dashboard", icon: BarChart3 },
     { id: "events", label: "Events", icon: Calendar },
@@ -49,8 +53,18 @@ export const Navigation = ({ currentPage, onPageChange }: NavigationProps) => {
           </div>
 
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" className="rounded-full">
-              <User className="w-5 h-5" />
+            <div className="flex items-center gap-2">
+              <img 
+                src={userData?.profile_photo} 
+                alt={userData?.name}
+                className="w-8 h-8 rounded-full"
+              />
+              <span className="text-sm font-medium text-gray-700 hidden md:inline">
+                {userData?.name}
+              </span>
+            </div>
+            <Button variant="ghost" size="icon" onClick={logout}>
+              <LogOut className="w-4 h-4" />
             </Button>
           </div>
         </div>
