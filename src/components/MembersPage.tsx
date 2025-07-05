@@ -4,57 +4,48 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Users, Star } from "lucide-react";
+import { Plus, Search, Users, Star, Edit, Trash2 } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getMembers, createMember, updateMember, deleteMember } from "@/services/firestoreService";
+import { CreateMemberDialog } from "@/components/CreateMemberDialog";
+import { EditMemberDialog } from "@/components/EditMemberDialog";
+import { useAuth } from "@/hooks/useAuth";
+import type { Member } from "@/services/firestoreService";
 
 export const MembersPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [editingMember, setEditingMember] = useState<Member | null>(null);
+  const { userData } = useAuth();
+  const queryClient = useQueryClient();
 
-  const members = [
-    {
-      id: 1,
-      name: "Sarah Chen",
-      email: "sarah.chen@university.edu",
-      role: "Core Team",
-      skills: ["Web Dev", "Cloud", "Leadership"],
-      xp: 1250,
-      eventsAttended: 8,
-      tasksCompleted: 15,
-      avatar: "SC"
-    },
-    {
-      id: 2,
-      name: "Alex Rodriguez",
-      email: "alex.r@university.edu",
-      role: "Volunteer",
-      skills: ["Android", "ML", "Design"],
-      xp: 890,
-      eventsAttended: 6,
-      tasksCompleted: 12,
-      avatar: "AR"
-    },
-    {
-      id: 3,
-      name: "Jordan Kim",
-      email: "jordan.kim@university.edu",
-      role: "Core Team",
-      skills: ["Cloud", "DevOps", "Security"],
-      xp: 760,
-      eventsAttended: 5,
-      tasksCompleted: 9,
-      avatar: "JK"
-    },
-    {
-      id: 4,
-      name: "Maya Patel",
-      email: "maya.p@university.edu",
-      role: "Volunteer",
-      skills: ["Web Dev", "UI/UX"],
-      xp: 650,
-      eventsAttended: 4,
-      tasksCompleted: 8,
-      avatar: "MP"
+  const { data: members = [], isLoading } = useQuery({
+    queryKey: ['members'],
+    queryFn: getMembers
+  });
+
+  const createMemberMutation = useMutation({
+    mutationFn: createMember,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['members'] });
+      setShowCreateDialog(false);
     }
-  ];
+  });
+
+  const updateMemberMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<Member> }) => updateMember(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['members'] });
+      setEditingMember(null);
+    }
+  });
+
+  const deleteMemberMutation = useMutation({
+    mutationFn: deleteMember,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['members'] });
+    }
+  });
 
   const filteredMembers = members.filter(member =>
     member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -63,16 +54,40 @@ export const MembersPage = () => {
 
   const getRoleColor = (role: string) => {
     switch (role) {
-      case "Admin":
+      case "admin":
         return "bg-red-100 text-red-800";
-      case "Core Team":
+      case "core":
         return "bg-blue-100 text-blue-800";
-      case "Volunteer":
+      case "volunteer":
         return "bg-green-100 text-green-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
   };
+
+  const handleCreateMember = (memberData: any) => {
+    createMemberMutation.mutate(memberData);
+  };
+
+  const handleUpdateMember = (memberData: any) => {
+    if (editingMember?.id) {
+      updateMemberMutation.mutate({ id: editingMember.id, data: memberData });
+    }
+  };
+
+  const handleDeleteMember = (id: string) => {
+    if (window.confirm('Are you sure you want to delete this member?')) {
+      deleteMemberMutation.mutate(id);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-64">
+        <p>Loading members...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -81,10 +96,15 @@ export const MembersPage = () => {
           <h1 className="text-3xl font-bold text-gray-900">Members</h1>
           <p className="text-gray-600 mt-1">Manage your GDG chapter members and their contributions.</p>
         </div>
-        <Button className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2">
-          <Plus className="w-4 h-4" />
-          Add Member
-        </Button>
+        {(userData?.role === 'admin' || userData?.role === 'core') && (
+          <Button 
+            onClick={() => setShowCreateDialog(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Add Member
+          </Button>
+        )}
       </div>
 
       {/* Search and Stats */}
@@ -113,12 +133,30 @@ export const MembersPage = () => {
             <CardHeader className="pb-3">
               <div className="flex items-center gap-3 mb-2">
                 <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center text-white font-bold">
-                  {member.avatar}
+                  {member.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                 </div>
                 <div className="flex-1">
                   <h3 className="font-semibold text-gray-900">{member.name}</h3>
                   <p className="text-sm text-gray-600">{member.email}</p>
                 </div>
+                {(userData?.role === 'admin' || userData?.role === 'core') && (
+                  <div className="flex gap-1">
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => setEditingMember(member)}
+                    >
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => handleDeleteMember(member.id!)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                )}
               </div>
               <Badge className={getRoleColor(member.role)}>
                 {member.role}
@@ -129,7 +167,7 @@ export const MembersPage = () => {
                 <div>
                   <p className="text-sm font-medium text-gray-700 mb-2">Skills</p>
                   <div className="flex flex-wrap gap-1">
-                    {member.skills.map((skill) => (
+                    {member.skills?.map((skill) => (
                       <Badge key={skill} variant="outline" className="text-xs">
                         {skill}
                       </Badge>
@@ -139,15 +177,15 @@ export const MembersPage = () => {
 
                 <div className="grid grid-cols-3 gap-2 text-center">
                   <div className="p-2 bg-yellow-50 rounded">
-                    <p className="text-lg font-bold text-yellow-600">{member.xp}</p>
+                    <p className="text-lg font-bold text-yellow-600">{member.xp || 0}</p>
                     <p className="text-xs text-gray-600">XP</p>
                   </div>
                   <div className="p-2 bg-blue-50 rounded">
-                    <p className="text-lg font-bold text-blue-600">{member.eventsAttended}</p>
+                    <p className="text-lg font-bold text-blue-600">{member.event_history?.length || 0}</p>
                     <p className="text-xs text-gray-600">Events</p>
                   </div>
                   <div className="p-2 bg-green-50 rounded">
-                    <p className="text-lg font-bold text-green-600">{member.tasksCompleted}</p>
+                    <p className="text-lg font-bold text-green-600">{member.total_tasks_completed || 0}</p>
                     <p className="text-xs text-gray-600">Tasks</p>
                   </div>
                 </div>
@@ -160,6 +198,23 @@ export const MembersPage = () => {
           </Card>
         ))}
       </div>
+
+      <CreateMemberDialog 
+        open={showCreateDialog}
+        onOpenChange={setShowCreateDialog}
+        onSubmit={handleCreateMember}
+        isLoading={createMemberMutation.isPending}
+      />
+
+      {editingMember && (
+        <EditMemberDialog 
+          member={editingMember}
+          open={!!editingMember}
+          onOpenChange={() => setEditingMember(null)}
+          onSubmit={handleUpdateMember}
+          isLoading={updateMemberMutation.isPending}
+        />
+      )}
     </div>
   );
 };

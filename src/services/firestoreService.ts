@@ -74,6 +74,11 @@ export const updateEvent = async (id: string, event: Partial<Event>): Promise<vo
   await updateDoc(eventDoc, event);
 };
 
+export const deleteEvent = async (id: string): Promise<void> => {
+  const eventDoc = doc(db, 'events', id);
+  await deleteDoc(eventDoc);
+};
+
 // Tasks
 export const getTasks = async (): Promise<Task[]> => {
   const tasksCollection = collection(db, 'tasks');
@@ -91,11 +96,31 @@ export const updateTask = async (id: string, task: Partial<Task>): Promise<void>
   await updateDoc(taskDoc, task);
 };
 
+export const deleteTask = async (id: string): Promise<void> => {
+  const taskDoc = doc(db, 'tasks', id);
+  await deleteDoc(taskDoc);
+};
+
 // Members
 export const getMembers = async (): Promise<Member[]> => {
   const membersCollection = collection(db, 'users');
   const membersSnapshot = await getDocs(membersCollection);
   return membersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Member));
+};
+
+export const createMember = async (member: Omit<Member, 'id'>): Promise<string> => {
+  const docRef = await addDoc(collection(db, 'users'), member);
+  return docRef.id;
+};
+
+export const updateMember = async (id: string, member: Partial<Member>): Promise<void> => {
+  const memberDoc = doc(db, 'users', id);
+  await updateDoc(memberDoc, member);
+};
+
+export const deleteMember = async (id: string): Promise<void> => {
+  const memberDoc = doc(db, 'users', id);
+  await deleteDoc(memberDoc);
 };
 
 // Documentation
