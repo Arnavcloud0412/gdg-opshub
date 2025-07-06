@@ -1,16 +1,23 @@
-
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
+// IMPORTANT: Add these to your .env file (Vite style):
+// VITE_FIREBASE_API_KEY=...
+// VITE_FIREBASE_AUTH_DOMAIN=...
+// VITE_FIREBASE_PROJECT_ID=...
+// VITE_FIREBASE_STORAGE_BUCKET=...
+// VITE_FIREBASE_MESSAGING_SENDER_ID=...
+// VITE_FIREBASE_APP_ID=...
+
 const firebaseConfig = {
-  apiKey: "AIzaSyBBGDVWvfLgqnW6pSaUHPLw03GChkxbte0",
-  authDomain: "gdg-opshub.firebaseapp.com",
-  projectId: "gdg-opshub",
-  storageBucket: "gdg-opshub.appspot.com",
-  messagingSenderId: "188075310126",
-  appId: "1:188075310126:web:f8b8c8d8f8b8c8d8f8b8c8"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || ""
 };
 
 const app = initializeApp(firebaseConfig);

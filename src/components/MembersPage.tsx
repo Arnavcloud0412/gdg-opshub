@@ -94,7 +94,7 @@ export const MembersPage = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Members</h1>
-          <p className="text-gray-600 mt-1">Manage your GDG chapter members and their contributions.</p>
+          <p className="text-black-600 mt-1">Manage your GDG chapter members and their contributions.</p>
         </div>
         {(userData?.role === 'admin' || userData?.role === 'core') && (
           <Button 

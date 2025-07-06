@@ -1,4 +1,3 @@
-
 import { 
   collection, 
   doc, 
@@ -126,8 +125,61 @@ export const deleteMember = async (id: string): Promise<void> => {
 // Documentation
 export const saveGeneratedDoc = async (eventId: string, content: any): Promise<void> => {
   const docRef = doc(db, 'docs', eventId);
-  await updateDoc(docRef, {
+  const docData = {
     ...content,
     generated_at: Timestamp.now()
+  };
+  console.log('[saveGeneratedDoc] eventId:', eventId);
+  console.log('[saveGeneratedDoc] content:', content);
+  console.log('[saveGeneratedDoc] docData to be saved:', docData);
+  await updateDoc(docRef, docData);
+};
+
+export const getEventDocumentation = async (eventId: string): Promise<any> => {
+  const docRef = doc(db, 'docs', eventId);
+  const docSnap = await getDoc(docRef);
+  return docSnap.exists() ? docSnap.data() : null;
+};
+
+/**
+ * Adds XP to multiple members and updates their event history when an event is completed.
+ * @param memberIds Array of member IDs to update
+ * @param eventId The event ID to add to event_history
+ * @param xpAmount The amount of XP to add to each member
+ */
+export const addXpToMembersForEvent = async (memberIds: string[], eventId: string, xpAmount: number) => {
+  const updates = memberIds.map(async (memberId) => {
+    const memberDocRef = doc(db, 'users', memberId);
+    const memberSnap = await getDoc(memberDocRef);
+    if (!memberSnap.exists()) return;
+    const memberData = memberSnap.data() as Member;
+    const newXp = (memberData.xp || 0) + xpAmount;
+    const newEventHistory = Array.isArray(memberData.event_history)
+      ? Array.from(new Set([...memberData.event_history, eventId]))
+      : [eventId];
+    await updateDoc(memberDocRef, {
+      xp: newXp,
+      event_history: newEventHistory
+    });
+  });
+  await Promise.all(updates);
+};
+
+/**
+ * Adds XP to a member for completing a task and increments their total_tasks_completed.
+ * @param memberId The member's ID
+ * @param taskId The task ID (for future extensibility)
+ * @param xpAmount The amount of XP to add
+ */
+export const addXpToMemberForTask = async (memberId: string, taskId: string, xpAmount: number) => {
+  const memberDocRef = doc(db, 'users', memberId);
+  const memberSnap = await getDoc(memberDocRef);
+  if (!memberSnap.exists()) return;
+  const memberData = memberSnap.data() as Member;
+  const newXp = (memberData.xp || 0) + xpAmount;
+  const newTotalTasks = (memberData.total_tasks_completed || 0) + 1;
+  await updateDoc(memberDocRef, {
+    xp: newXp,
+    total_tasks_completed: newTotalTasks
   });
 };

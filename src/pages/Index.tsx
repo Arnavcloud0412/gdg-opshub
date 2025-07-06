@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { GoogleAuth } from "@/components/GoogleAuth";
 import { Dashboard } from "@/components/Dashboard";
@@ -15,11 +14,13 @@ const Index = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 bg-gradient-to-r from-blue-500 via-red-500 via-yellow-500 to-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-white font-bold text-xl">GDG</span>
-          </div>
+          <img
+            src="/icon.png"
+            alt="GDG Logo"
+            className="mx-auto mb-4 w-16 h-16 rounded-full shadow"
+          />
           <p className="text-gray-600">Loading...</p>
         </div>
       </div>
@@ -46,7 +47,9 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen" style={{
+      background: "linear-gradient(135deg, #4285F4 0%, #EA4335 25%, #FBBC05 50%, #34A853 100%)"
+    }}>
       <Navigation currentPage={currentPage} onPageChange={setCurrentPage} userData={userData} />
       <main className="container mx-auto px-4 py-6">
         {renderCurrentPage()}

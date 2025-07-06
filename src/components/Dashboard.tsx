@@ -1,10 +1,14 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Users, Calendar, CheckSquare, TrendingUp, Plus, Award } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getEvents, getTasks, getMembers } from "@/services/firestoreService";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { CreateEventDialog } from "@/components/CreateEventDialog";
+import { CreateMemberDialog } from "@/components/CreateMemberDialog";
+import { CreateTaskDialog } from "@/components/CreateTaskDialog";
+import { useAuth } from "@/hooks/useAuth";
 
 export const Dashboard = () => {
   const { data: events = [], isLoading: eventsLoading } = useQuery({
@@ -75,18 +79,58 @@ export const Dashboard = () => {
       status: event.status === 'completed' ? 'Completed' : 'Upcoming'
     }));
 
+  // Dialog state
+  const [showCreateEvent, setShowCreateEvent] = useState(false);
+  const [showAddMember, setShowAddMember] = useState(false);
+  const [showCreateTask, setShowCreateTask] = useState(false);
+
+  // Placeholder handlers for each action
+  const handleCreateEvent = () => setShowCreateEvent(true);
+  const handleAddMember = () => setShowAddMember(true);
+  const handleAssignTask = () => setShowCreateTask(false);
+
+  // Placeholder submit handlers
+  const handleSubmitEvent = (data: any) => { setShowCreateEvent(false); };
+  const handleSubmitMember = (data: any) => { setShowAddMember(false); };
+  const handleSubmitTask = (data: any) => { setShowCreateTask(false); };
+
+  const { userData } = useAuth();
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600 mt-1">Welcome back! Here's what's happening in your GDG chapter.</p>
+          <p className="text-white-600 mt-1">Welcome back! Here's what's happening in your GDG chapter.</p>
         </div>
-        <Button className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2">
-          <Plus className="w-4 h-4" />
-          Quick Action
-        </Button>
+        {userData?.role !== 'volunteer' && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2">
+                <Plus className="w-4 h-4" />
+                Quick Action
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={handleCreateEvent}>
+                <Calendar className="w-4 h-4 mr-2 text-blue-600" />
+                Create Event
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleAddMember}>
+                <Users className="w-4 h-4 mr-2 text-green-600" />
+                Add Member
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleAssignTask}>
+                <CheckSquare className="w-4 h-4 mr-2 text-yellow-600" />
+                Assign Task
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
+      <CreateEventDialog open={showCreateEvent} onOpenChange={setShowCreateEvent} onSubmit={handleSubmitEvent} isLoading={false} />
+      <CreateMemberDialog open={showAddMember} onOpenChange={setShowAddMember} onSubmit={handleSubmitMember} isLoading={false} />
+      <CreateTaskDialog open={showCreateTask} onOpenChange={setShowCreateTask} onSubmit={handleSubmitTask} isLoading={false} events={events} members={members} />
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

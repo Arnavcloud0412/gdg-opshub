@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Chrome } from "lucide-react";
@@ -8,12 +7,16 @@ export const GoogleAuth = () => {
   const { signInWithGoogle, loading } = useAuth();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4" style={{
+      background: "linear-gradient(135deg, #4285F4 0%, #EA4335 25%, #FBBC05 50%, #34A853 100%)"
+    }}>
       <Card className="w-full max-w-md shadow-xl border-0">
         <CardHeader className="text-center pb-2">
-          <div className="mx-auto mb-4 w-16 h-16 bg-gradient-to-r from-blue-500 via-red-500 via-yellow-500 to-green-500 rounded-full flex items-center justify-center">
-            <span className="text-white font-bold text-xl">GDG</span>
-          </div>
+          <img
+            src="/icon.png"
+            alt="GDG Logo"
+            className="mx-auto mb-4 w-16 h-16 rounded-full shadow"
+          />
           <CardTitle className="text-2xl font-bold text-gray-900">GDG OpsHub</CardTitle>
           <p className="text-gray-600 mt-2">Chapter Management Portal</p>
         </CardHeader>

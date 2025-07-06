@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Calendar, User, CheckCircle, Clock, AlertCircle, Edit, Trash2 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getTasks, getEvents, getMembers, createTask, updateTask, deleteTask } from "@/services/firestoreService";
+import { getTasks, getEvents, getMembers, createTask, updateTask, deleteTask, addXpToMemberForTask } from "@/services/firestoreService";
 import { CreateTaskDialog } from "@/components/CreateTaskDialog";
 import { EditTaskDialog } from "@/components/EditTaskDialog";
 import { useAuth } from "@/hooks/useAuth";
@@ -108,8 +107,12 @@ export const TasksPage = () => {
     createTaskMutation.mutate(taskData);
   };
 
-  const handleUpdateTask = (taskData: any) => {
+  const handleUpdateTask = async (taskData: any) => {
     if (editingTask?.id) {
+      // If marking as done and it was not done before, award XP
+      if (taskData.status === 'done' && editingTask.status !== 'done') {
+        await addXpToMemberForTask(taskData.assigned_to, editingTask.id, taskData.points);
+      }
       updateTaskMutation.mutate({ id: editingTask.id, data: taskData });
     }
   };
@@ -133,7 +136,7 @@ export const TasksPage = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Tasks</h1>
-          <p className="text-gray-600 mt-1">Track and manage event-related tasks and assignments.</p>
+          <p className="text-black-600 mt-1">Track and manage event-related tasks and assignments.</p>
         </div>
         {(userData?.role === 'admin' || userData?.role === 'core') && (
           <Button 

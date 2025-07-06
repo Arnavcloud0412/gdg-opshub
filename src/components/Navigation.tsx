@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Users, Calendar, CheckSquare, FileText, BarChart3, User, LogOut } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -21,13 +20,15 @@ export const Navigation = ({ currentPage, onPageChange, userData }: NavigationPr
   ];
 
   return (
-    <nav className="bg-white shadow-sm border-b">
+    <nav className="bg-transparent backdrop-blur-md">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-r from-blue-500 via-red-500 via-yellow-500 to-green-500 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">GDG</span>
-            </div>
+            <img
+              src="/icon.png"
+              alt="GDG Logo"
+              className="w-10 h-10 rounded-lg shadow"
+            />
             <h1 className="text-xl font-bold text-gray-900">OpsHub</h1>
           </div>
           

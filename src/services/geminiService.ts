@@ -1,16 +1,20 @@
 
-const GEMINI_API_KEY = 'AIzaSyA23xxwOZ9a4cD2m7MeROIAUfSx1Hbdxes';
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
-
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || 'AIzaSyA23xxwOZ9a4cD2m7MeROIAUfSx1Hbdxes';
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 export interface DocumentationResult {
   summary?: string;
   socialMedia?: string;
   blogDraft?: string;
   newsletter?: string;
+  comprehensiveReport?: string;
   text?: string;
 }
 
 export const generateEventDocumentation = async (prompt: string): Promise<DocumentationResult> => {
+  if (!GEMINI_API_KEY) {
+    throw new Error('Gemini API key is not configured. Please set VITE_GEMINI_API_KEY in your environment variables.');
+  }
+
   try {
     const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
       method: 'POST',
@@ -22,29 +26,32 @@ export const generateEventDocumentation = async (prompt: string): Promise<Docume
           parts: [{
             text: `You are a professional event documentation assistant for a Google Developer Group (GDG). 
             
-Based on the following event information, generate four types of content:
+Based on the following event information, generate comprehensive documentation including:
 
-1. A professional event summary (2-3 paragraphs)
-2. A social media post for LinkedIn/Twitter (engaging, with hashtags)
-3. A blog post draft (with markdown formatting)
-4. A newsletter summary (concise and friendly)
+1. A professional event summary (2-3 paragraphs highlighting key achievements, attendance, and outcomes)
+2. A social media post for LinkedIn/Twitter (engaging, with relevant hashtags like #GDG #TechCommunity #DeveloperCommunity)
+3. A blog post draft (with markdown formatting, including sections for overview, highlights, key takeaways, and future events)
+4. A newsletter summary (concise and friendly tone for community updates)
+5. A comprehensive event report (detailed analysis including technical details, community engagement, and impact metrics)
 
 Event Information: ${prompt}
 
-Please format your response as JSON with keys: summary, socialMedia, blogDraft, newsletter`
+Please format your response as JSON with keys: summary, socialMedia, blogDraft, newsletter, comprehensiveReport. Make the content engaging, professional, and suitable for a tech community audience.`
           }]
         }],
         generationConfig: {
           temperature: 0.7,
           topK: 40,
           topP: 0.95,
-          maxOutputTokens: 2048,
+          maxOutputTokens: 4096,
         }
       })
     });
 
     if (!response.ok) {
-      throw new Error(`Gemini API error: ${response.status}`);
+      const errorText = await response.text();
+      console.error('Gemini API error response:', errorText);
+      throw new Error(`Gemini API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
@@ -59,9 +66,10 @@ Please format your response as JSON with keys: summary, socialMedia, blogDraft, 
       return {
         text: generatedText,
         summary: generatedText.split('\n\n')[0] || generatedText,
-        socialMedia: `🚀 Amazing GDG event! ${generatedText.substring(0, 150)}... #GDG #TechCommunity`,
+        socialMedia: `🚀 Amazing GDG event! ${generatedText.substring(0, 150)}... #GDG #TechCommunity #DeveloperCommunity`,
         blogDraft: `# Event Recap\n\n${generatedText}`,
-        newsletter: `📱 Event Update\n\n${generatedText.substring(0, 200)}...\n\nBest regards,\nGDG Team`
+        newsletter: `📱 Event Update\n\n${generatedText.substring(0, 200)}...\n\nBest regards,\nGDG Team`,
+        comprehensiveReport: generatedText
       };
     }
   } catch (error) {
@@ -70,44 +78,3 @@ Please format your response as JSON with keys: summary, socialMedia, blogDraft, 
   }
 };
 
-export const generateImageDescription = async (imageUrl: string, context: string): Promise<string> => {
-  try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key=${GEMINI_API_KEY}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        contents: [{
-          parts: [
-            {
-              text: `Describe this GDG event image in the context of: ${context}`
-            },
-            {
-              inline_data: {
-                mime_type: 'image/jpeg',
-                data: imageUrl
-              }
-            }
-          ]
-        }],
-        generationConfig: {
-          temperature: 0.4,
-          topK: 32,
-          topP: 1,
-          maxOutputTokens: 512,
-        }
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error(`Gemini Vision API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    return data.candidates?.[0]?.content?.parts?.[0]?.text || 'Unable to analyze image';
-  } catch (error) {
-    console.error('Error calling Gemini Vision API:', error);
-    throw error;
-  }
-};
