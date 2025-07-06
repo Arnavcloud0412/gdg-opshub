@@ -131,7 +131,7 @@ export const Dashboard = () => {
       <CreateEventDialog open={showCreateEvent} onOpenChange={setShowCreateEvent} onSubmit={handleSubmitEvent} isLoading={false} />
       <CreateMemberDialog open={showAddMember} onOpenChange={setShowAddMember} onSubmit={handleSubmitMember} isLoading={false} />
       <CreateTaskDialog open={showCreateTask} onOpenChange={setShowCreateTask} onSubmit={handleSubmitTask} isLoading={false} events={events} members={members} />
-
+      
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, index) => {

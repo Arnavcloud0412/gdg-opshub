@@ -7,10 +7,12 @@ import { TasksPage } from "@/components/TasksPage";
 import { AIDocsPage } from "@/components/AIDocsPage";
 import { Navigation } from "@/components/Navigation";
 import { useAuth } from "@/hooks/useAuth";
+import { ChatbotWidget } from "@/chatbot";
 
 const Index = () => {
   const { user, userData, loading } = useAuth();
   const [currentPage, setCurrentPage] = useState("dashboard");
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   if (loading) {
     return (
@@ -54,6 +56,15 @@ const Index = () => {
       <main className="container mx-auto px-4 py-6">
         {renderCurrentPage()}
       </main>
+      
+      {/* Chatbot Widget - Only show for authenticated users */}
+      {user && userData && (
+        <ChatbotWidget 
+          isOpen={isChatOpen} 
+          onToggle={() => setIsChatOpen(!isChatOpen)}
+          onNavigate={(page) => setCurrentPage(page)}
+        />
+      )}
     </div>
   );
 };

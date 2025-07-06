@@ -1,0 +1,92 @@
+[
+  {
+    "question": "What is GDG?",
+    "answer": "Google Developer Groups (GDG) are local communities of developers interested in Google's developer technology. These groups host events, workshops, and meetups to share knowledge and build connections in the developer community.",
+    "category": "general",
+    "tags": ["gdg", "community", "google", "developers", "what is"]
+  },
+  {
+    "question": "How can I join the GDG community?",
+    "answer": "You can join the GDG community by attending our events, joining our social media channels, or reaching out to our organizers. We welcome developers of all skill levels and backgrounds. Check our website or social media for upcoming events and registration details.",
+    "category": "membership",
+    "tags": ["join", "membership", "community", "how to", "register"]
+  },
+  {
+    "question": "What events does GDG host?",
+    "answer": "GDG hosts various events including tech talks, workshops, hackathons, study groups, and networking events. We cover topics like Android development, Flutter, Google Cloud, AI/ML, and other Google technologies. Events are typically free and open to all developers.",
+    "category": "events",
+    "tags": ["events", "workshops", "talks", "hackathons", "meetups"]
+  },
+  {
+    "question": "Are GDG events free?",
+    "answer": "Yes, most GDG events are free to attend! We believe in making technology education accessible to everyone. Some special events or workshops might have a small fee to cover materials or venue costs, but this is rare.",
+    "category": "events",
+    "tags": ["free", "cost", "price", "events", "attendance"]
+  },
+  {
+    "question": "Do I need to be an expert developer to join?",
+    "answer": "Not at all! GDG welcomes developers of all skill levels, from beginners to experts. Our community is built on learning and sharing knowledge. We have events and resources for everyone, whether you're just starting your coding journey or you're a seasoned developer.",
+    "category": "membership",
+    "tags": ["beginner", "expert", "skill level", "experience", "newbie"]
+  },
+  {
+    "question": "What technologies does GDG focus on?",
+    "answer": "GDG focuses on Google's developer technologies including Android, Flutter, Google Cloud Platform, Firebase, TensorFlow, and other Google APIs and tools. We also cover general software development topics and emerging technologies.",
+    "category": "technology",
+    "tags": ["android", "flutter", "google cloud", "firebase", "tensorflow", "technologies"]
+  },
+  {
+    "question": "How often does GDG meet?",
+    "answer": "GDG typically meets monthly, but the frequency can vary. We host regular meetups, workshops, and special events throughout the year. Check our calendar or social media for the most up-to-date schedule of events.",
+    "category": "events",
+    "tags": ["schedule", "frequency", "meetings", "calendar", "how often"]
+  },
+  {
+    "question": "Can I speak at a GDG event?",
+    "answer": "Absolutely! We're always looking for speakers to share their knowledge and experiences. Whether you want to present a technical talk, lead a workshop, or share a project, we'd love to hear from you. Contact our organizers to discuss speaking opportunities.",
+    "category": "events",
+    "tags": ["speak", "present", "talk", "workshop", "speaker"]
+  },
+  {
+    "question": "What is the GDG Hive AI Hub?",
+    "answer": "GDG Hive AI Hub is our community's platform for AI and machine learning enthusiasts. It's a space where members can collaborate on AI projects, share knowledge about Google's AI technologies, and participate in AI-focused events and workshops.",
+    "category": "general",
+    "tags": ["hive", "ai hub", "ai", "machine learning", "platform"]
+  },
+  {
+    "question": "How can I stay updated with GDG news?",
+    "answer": "You can stay updated by following us on social media (Twitter, LinkedIn, Facebook), joining our mailing list, checking our website regularly, or joining our Discord/Telegram community. We post about upcoming events, tech news, and community updates.",
+    "category": "communication",
+    "tags": ["news", "updates", "social media", "mailing list", "notifications"]
+  },
+  {
+    "question": "Does GDG offer certification or training?",
+    "answer": "While GDG doesn't offer official certifications, we do provide learning opportunities through workshops, study groups, and hands-on sessions. We often partner with Google to offer training on Google technologies and sometimes provide certificates of participation for our events.",
+    "category": "education",
+    "tags": ["certification", "training", "learning", "education", "workshops"]
+  },
+  {
+    "question": "Can I volunteer with GDG?",
+    "answer": "Yes! GDG is run by volunteers and we're always looking for people to help organize events, manage social media, create content, or assist with various community activities. Volunteering is a great way to give back to the community and develop new skills.",
+    "category": "membership",
+    "tags": ["volunteer", "help", "organize", "contribute", "give back"]
+  },
+  {
+    "question": "What is the difference between GDG and other tech communities?",
+    "answer": "GDG is specifically focused on Google's developer technologies and is officially recognized by Google. We have access to Google resources, official materials, and direct support from Google. However, we also collaborate with other tech communities and welcome members from all backgrounds.",
+    "category": "general",
+    "tags": ["difference", "other communities", "google official", "collaboration"]
+  },
+  {
+    "question": "How can I contribute to GDG projects?",
+    "answer": "You can contribute by participating in hackathons, joining study groups, sharing your projects, helping organize events, or contributing to our open-source initiatives. We welcome all forms of contribution and collaboration within our community.",
+    "category": "membership",
+    "tags": ["contribute", "projects", "hackathons", "open source", "collaboration"]
+  },
+  {
+    "question": "What networking opportunities does GDG provide?",
+    "answer": "GDG provides excellent networking opportunities through our events, workshops, and community gatherings. You can connect with other developers, industry professionals, Google employees, and potential collaborators. Our events often include dedicated networking time.",
+    "category": "community",
+    "tags": ["networking", "connections", "professional", "community", "relationships"]
+  }
+] 
