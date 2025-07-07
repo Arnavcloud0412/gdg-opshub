@@ -3,6 +3,7 @@ import { useState, useEffect, createContext, useContext } from 'react';
 import { User, signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, googleProvider, db } from '@/lib/firebase';
+import { isMESEmail } from '@/lib/authUtils';
 
 interface UserData {
   uid: string;
@@ -39,6 +40,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [signInLoading, setSignInLoading] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -81,9 +83,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signInWithGoogle = async () => {
     try {
-      await signInWithPopup(auth, googleProvider);
+      setSignInLoading(true);
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+      
+      // Check if user's email is from the allowed domain
+      if (user.email && !isMESEmail(user.email)) {
+        // Sign out the user immediately if email domain is not allowed
+        await signOut(auth);
+        throw new Error('Access denied. Only @student.mes.ac.in and @mes.ac.in email addresses are allowed.');
+      }
     } catch (error) {
       console.error('Error signing in with Google:', error);
+      // Re-throw the error so it can be handled by the UI
+      throw error;
+    } finally {
+      setSignInLoading(false);
     }
   };
 
@@ -98,7 +113,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const value = {
     user,
     userData,
-    loading,
+    loading: loading || signInLoading,
     signInWithGoogle,
     logout
   };
