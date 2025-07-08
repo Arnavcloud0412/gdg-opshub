@@ -101,6 +101,6 @@ All colors MUST be HSL.
 
   body {
     @apply text-foreground;
-    background: linear-gradient(135deg, #4285F4 0%, #EA4335 25%, #FBBC05 50%, #34A853 100%) !important;
+    background: #f8f9fa !important;
   }
 }

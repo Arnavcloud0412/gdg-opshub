@@ -1,4 +1,3 @@
-
 import { useState, useEffect, createContext, useContext } from 'react';
 import { User, signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
@@ -24,6 +23,7 @@ interface AuthContextType {
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
+  signInAsDemoUser: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -41,6 +41,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
   const [signInLoading, setSignInLoading] = useState(false);
+
+  // Demo user state
+  const demoUser = {
+    uid: 'demo-volunteer',
+    name: 'Demo Volunteer',
+    email: 'demo@demo.com',
+    role: 'volunteer',
+    skills: ['demo'],
+    profile_photo: '',
+    xp: 0,
+    joined_at: new Date(),
+    event_history: [],
+    total_tasks_completed: 0
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -105,9 +119,38 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const logout = async () => {
     try {
       await signOut(auth);
+      setUser(null);
+      setUserData(null);
     } catch (error) {
       console.error('Error signing out:', error);
     }
+  };
+
+  const signInAsDemoUser = () => {
+    // Create a minimal mock User object
+    const fakeUser = {
+      uid: 'demo-volunteer',
+      displayName: 'Demo Volunteer',
+      email: 'demo@demo.com',
+      photoURL: '',
+      emailVerified: true,
+      isAnonymous: true,
+      providerData: [],
+      getIdToken: async () => 'demo-token',
+      getIdTokenResult: async () => ({ token: 'demo-token' }),
+      reload: async () => {},
+      delete: async () => {},
+      metadata: {},
+      phoneNumber: null,
+      providerId: 'demo',
+      refreshToken: '',
+      tenantId: null,
+      toJSON: () => ({}),
+      // @ts-ignore
+    } as User;
+    setUser(fakeUser);
+    setUserData(demoUser);
+    setLoading(false);
   };
 
   const value = {
@@ -115,7 +158,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     userData,
     loading: loading || signInLoading,
     signInWithGoogle,
-    logout
+    logout,
+    signInAsDemoUser
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

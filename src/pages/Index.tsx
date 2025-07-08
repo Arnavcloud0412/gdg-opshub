@@ -8,6 +8,8 @@ import { AIDocsPage } from "@/components/AIDocsPage";
 import { Navigation } from "@/components/Navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { ChatbotWidget } from "@/chatbot";
+import { GoogleDoodleBackground } from "@/components/GoogleDoodleBackground";
+import { LoadingAnimation } from "@/components/LoadingAnimation";
 
 const Index = () => {
   const { user, userData, loading } = useAuth();
@@ -16,21 +18,17 @@ const Index = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <img
-            src="/icon.png"
-            alt="GDG Logo"
-            className="mx-auto mb-4 w-16 h-16 rounded-full shadow"
-          />
-          <p className="text-gray-600">Loading...</p>
+      <div className="min-h-screen flex items-center justify-center relative">
+        <GoogleDoodleBackground />
+        <div className="text-center relative z-10">
+          <LoadingAnimation />
         </div>
       </div>
     );
   }
 
   if (!user || !userData) {
-    return <GoogleAuth />;
+    return <div className="relative min-h-screen"><GoogleDoodleBackground /><GoogleAuth /></div>;
   }
 
   const renderCurrentPage = () => {
@@ -49,9 +47,8 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen" style={{
-      background: "linear-gradient(135deg, #4285F4 0%, #EA4335 25%, #FBBC05 50%, #34A853 100%)"
-    }}>
+    <div className="min-h-screen relative">
+      <GoogleDoodleBackground />
       <Navigation currentPage={currentPage} onPageChange={setCurrentPage} userData={userData} />
       <main className="container mx-auto px-4 py-6">
         {renderCurrentPage()}
