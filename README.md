@@ -11,7 +11,7 @@ GDG OpsHub is a Chapter Management Portal designed for Google Developer Groups (
 - **Quick Actions**: Admins and core team can quickly create events, add members, or assign tasks from the dashboard.
 - **XP & Leaderboard**: Members earn XP for event and task participation, visible in the dashboard.
 - **AI Documentation**: Generate event documentation using Gemini AI integration.
-- **Chatbot Widget**: (Optional) Embed a chatbot for support or FAQs.
+- **Chatbot Widget**: Embed a chatbot for support or FAQs.
 
 ## Tech Stack
 - **React** (Vite, TypeScript)
